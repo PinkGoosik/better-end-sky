@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "better_end_sky",
+  "version": "${version}",
+
+  "name": "Better End Sky",
+  "description": "Ripoff of the Better End mod's sky renderer in a standalone mod.",
+  "authors": [
+    "BetterX Team"
+  ],
+  "contact": {
+    "homepage": "https://github.com/PinkGoosik/better-end-sky",
+    "sources": "https://github.com/PinkGoosik/better-end-sky",
+    "issues": "https://github.com/PinkGoosik/better-end-sky/issues"
+  },
+
+  "license": "MIT",
+  "icon": "assets/better_end_sky/icon.png",
+
+  "environment": "client",
+  "entrypoints": {
+    "client": ["better_end_sky.Mod"]
+  },
+  "mixins": ["better_end_sky.mixins.json"],
+
+  "depends": {
+    "fabricloader": "*",
+    "fabric": "*",
+    "minecraft": ">=1.19",
+    "java": ">=17"
+  }
+}
