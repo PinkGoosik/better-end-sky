@@ -2,7 +2,7 @@ package better_end_sky.util;
 
 import com.mojang.math.Vector3f;
 import net.minecraft.core.Vec3i;
-import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.levelgen.BitRandomSource;
 
 import java.util.Random;
 
@@ -21,7 +21,7 @@ public class MHelper {
         return min + random.nextDouble() * (max - min);
     }
 
-    public static double randRange(double min, double max, RandomSource random) {
+    public static double randRange(double min, double max, BitRandomSource random) {
         return min + random.nextDouble() * (max - min);
     }
 

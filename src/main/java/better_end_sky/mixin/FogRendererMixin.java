@@ -54,7 +54,7 @@ public abstract class FogRendererMixin {
     }
 
     @Inject(method = "setupFog", at = @At("HEAD"), cancellable = true)
-    private static void fogDensity(Camera camera, FogRenderer.FogMode fogMode, float viewDistance, boolean thickFog, float g, CallbackInfo ci) {
+    private static void fogDensity(Camera camera, FogRenderer.FogMode fogMode, float viewDistance, boolean thickFog, CallbackInfo ci) {
         if(!FabricLoader.getInstance().isModLoaded("betterend") && Minecraft.getInstance().level != null && Minecraft.getInstance().level.dimension().equals(Level.END)) {
             if (CustomFogRenderer.applyFogDensity(camera, viewDistance)) {
                 ci.cancel();

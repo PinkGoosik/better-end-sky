@@ -13,7 +13,7 @@ import com.mojang.math.Vector3f;
 import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.levelgen.BitRandomSource;
 import net.minecraft.world.level.levelgen.LegacyRandomSource;
 
 import net.fabricmc.fabric.api.client.rendering.v1.DimensionRenderingRegistry;
@@ -49,7 +49,7 @@ public class EndSkyRenderer implements DimensionRenderingRegistry.SkyRenderer {
     private void initialise() {
         if (!initialised) {
             initStars();
-            RandomSource random = new LegacyRandomSource(131);
+            BitRandomSource random = new LegacyRandomSource(131);
             axis1 = new Vector3f(random.nextFloat(), random.nextFloat(), random.nextFloat());
             axis2 = new Vector3f(random.nextFloat(), random.nextFloat(), random.nextFloat());
             axis3 = new Vector3f(random.nextFloat(), random.nextFloat(), random.nextFloat());
@@ -248,9 +248,9 @@ public class EndSkyRenderer implements DimensionRenderingRegistry.SkyRenderer {
 
         buffer = new VertexBuffer();
         fkt.make(bufferBuilder, minSize, maxSize, count, seed);
-        BufferBuilder.RenderedBuffer renderedBuffer = bufferBuilder.end();
+        bufferBuilder.end();
         buffer.bind();
-        buffer.upload(renderedBuffer);
+        buffer.upload(bufferBuilder);
 
         return buffer;
     }
@@ -272,7 +272,7 @@ public class EndSkyRenderer implements DimensionRenderingRegistry.SkyRenderer {
     }
 
     private void makeStars(BufferBuilder buffer, double minSize, double maxSize, int count, long seed) {
-        RandomSource random = new LegacyRandomSource(seed);
+        BitRandomSource random = new LegacyRandomSource(seed);
         RenderSystem.setShader(GameRenderer::getPositionShader);
         buffer.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
 
@@ -319,7 +319,7 @@ public class EndSkyRenderer implements DimensionRenderingRegistry.SkyRenderer {
     }
 
     private void makeUVStars(BufferBuilder buffer, double minSize, double maxSize, int count, long seed) {
-        RandomSource random = new LegacyRandomSource(seed);
+        BitRandomSource random = new LegacyRandomSource(seed);
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         buffer.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
 
@@ -369,7 +369,7 @@ public class EndSkyRenderer implements DimensionRenderingRegistry.SkyRenderer {
     }
 
     private void makeFarFog(BufferBuilder buffer, double minSize, double maxSize, int count, long seed) {
-        RandomSource random = new LegacyRandomSource(seed);
+        BitRandomSource random = new LegacyRandomSource(seed);
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         buffer.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
 
