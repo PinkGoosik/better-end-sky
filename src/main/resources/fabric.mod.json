@@ -4,8 +4,9 @@
   "version": "${version}",
 
   "name": "Better End Sky",
-  "description": "Ripoff of the Better End mod's sky renderer in a standalone mod.",
+  "description": "Ripoff of the Better End mod's sky renderer in a standalone mod for a client-side only usage.",
   "authors": [
+    "paulevs",
     "BetterX Team"
   ],
   "contact": {
