@@ -79,7 +79,6 @@ public class EndSkyRenderer implements DimensionRenderingRegistry.SkyRenderer {
 
         FogRenderer.levelFogColor();
         RenderSystem.depthMask(false);
-//        RenderSystem.text
 //        RenderSystem.enableTexture();
         RenderSystem.enableBlend();
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
