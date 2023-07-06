@@ -22,7 +22,7 @@ public class CustomFogRenderer {
         }
         Entity entity = camera.getEntity();
 
-        if (!isForcedDimension(entity.level)) {
+        if (!isForcedDimension(entity.getLevel())) {
             BackgroundInfo.fogDensity = 1;
             return false;
         }

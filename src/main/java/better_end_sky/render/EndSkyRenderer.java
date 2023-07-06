@@ -79,7 +79,6 @@ public class EndSkyRenderer implements DimensionRenderingRegistry.SkyRenderer {
 
         FogRenderer.levelFogColor();
         RenderSystem.depthMask(false);
-        RenderSystem.enableTexture();
         RenderSystem.enableBlend();
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
@@ -172,8 +171,6 @@ public class EndSkyRenderer implements DimensionRenderingRegistry.SkyRenderer {
             );
         }
 
-        RenderSystem.disableTexture();
-
         if (blindA > 0) {
             matrices.pushPose();
             matrices.mulPose(new Quaternionf().setAngleAxis(time3, axis1.x, axis1.y, axis1.z));
@@ -195,10 +192,10 @@ public class EndSkyRenderer implements DimensionRenderingRegistry.SkyRenderer {
             matrices.popPose();
         }
 
-        RenderSystem.enableTexture();
         RenderSystem.depthMask(true);
         RenderSystem.defaultBlendFunc();
         RenderSystem.disableBlend();
+		RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
     private void renderBuffer(
