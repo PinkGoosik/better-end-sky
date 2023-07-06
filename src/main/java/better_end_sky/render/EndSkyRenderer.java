@@ -243,7 +243,7 @@ public class EndSkyRenderer implements DimensionRenderingRegistry.SkyRenderer {
             buffer.close();
         }
 
-        buffer = new VertexBuffer();
+        buffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
         fkt.make(bufferBuilder, minSize, maxSize, count, seed);
         BufferBuilder.RenderedBuffer renderedBuffer = bufferBuilder.end();
         buffer.bind();
