@@ -12,19 +12,15 @@ public class MHelper {
     public static final float PI2 = (float) (Math.PI * 2);
     public static final Random RANDOM = new Random();
 
-    public static int randRange(int min, int max, Random random) {
+    public static int randRange(int min, int max, RandomSource random) {
         return min + random.nextInt(max - min + 1);
-    }
-
-    public static double randRange(double min, double max, Random random) {
-        return min + random.nextDouble() * (max - min);
     }
 
     public static double randRange(double min, double max, RandomSource random) {
         return min + random.nextDouble() * (max - min);
     }
 
-    public static float randRange(float min, float max, Random random) {
+    public static float randRange(float min, float max, RandomSource random) {
         return min + random.nextFloat() * (max - min);
     }
 
@@ -144,7 +140,7 @@ public class MHelper {
         return h ^ (h >> 16);
     }
 
-    public static <T> void shuffle(T[] array, Random random) {
+    public static <T> void shuffle(T[] array, RandomSource random) {
         for (int i = 0; i < array.length; i++) {
             int i2 = random.nextInt(array.length);
             T element = array[i];
@@ -173,7 +169,7 @@ public class MHelper {
         return value / RAD_TO_DEG;
     }
 
-    public static Vec3i[] getOffsets(Random random) {
+      public static Vec3i[] getOffsets(RandomSource random) {
         shuffle(RANDOM_OFFSETS, random);
         return RANDOM_OFFSETS;
     }

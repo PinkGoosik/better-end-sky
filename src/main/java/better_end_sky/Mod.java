@@ -16,6 +16,6 @@ public class Mod implements ClientModInitializer {
     }
 
     public static ResourceLocation id(String path) {
-        return new ResourceLocation("better_end_sky", path);
+        return ResourceLocation.fromNamespaceAndPath("better_end_sky", path);
     }
 }
