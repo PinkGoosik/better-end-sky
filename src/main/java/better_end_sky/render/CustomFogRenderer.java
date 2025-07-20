@@ -53,8 +53,8 @@ public class CustomFogRenderer {
                 BackgroundInfo.blindness = 0;
             }
         }
-        RenderSystem.setShaderFogStart(fogStart);
-        RenderSystem.setShaderFogEnd(fogEnd);
+//        RenderSystem.setShaderFogStart(fogStart);
+//        RenderSystem.setShaderFogEnd(fogEnd);
 
         return true;
     }
