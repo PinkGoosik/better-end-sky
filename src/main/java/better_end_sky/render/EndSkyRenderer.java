@@ -62,14 +62,16 @@ public class EndSkyRenderer implements DimensionRenderingRegistry.SkyRenderer {
 
     @Override
     public void render(WorldRenderContext context) {
-        if (context.world() == null || context.matrixStack() == null) {
+        if (context.world() == null ) {
             return;
         }
-
         initialise();
-
         Matrix4f projectionMatrix = context.projectionMatrix();
         PoseStack matrices = context.matrixStack();
+        if (matrices == null ) {
+            matrices = new PoseStack();
+            matrices.mulPose(context.positionMatrix());
+        }
 
         float time = ((context.world().getDayTime() + context
                 .tickCounter()
