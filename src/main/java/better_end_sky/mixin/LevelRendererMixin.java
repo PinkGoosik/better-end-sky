@@ -10,7 +10,6 @@ import com.mojang.blaze3d.resource.GraphicsResourceAllocator;
 import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.SkyRenderer;
 import org.jetbrains.annotations.Nullable;
@@ -23,6 +22,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import static better_end_sky.Mod.hasBetterSky;
 import static better_end_sky.Mod.isDisabled;
 
 @Mixin(LevelRenderer.class)
@@ -44,7 +44,7 @@ public class LevelRendererMixin {
         if (isDisabled()) return;
 
         better_end_sky$positionMatrix = positionMatrix;
-        if (level.effects().skyType() == DimensionSpecialEffects.SkyType.END) {
+        if (hasBetterSky(level)) {
             fogCheck.set(true);
         }
     }
@@ -60,7 +60,7 @@ public class LevelRendererMixin {
     @ModifyReturnValue(method = "doesMobEffectBlockSky", at = @At("RETURN"))
     boolean allowSkyRender(boolean original, Camera camera) {
         if (isDisabled()) return original;
-        if (level.effects().skyType() == DimensionSpecialEffects.SkyType.END) {
+        if (hasBetterSky(level)) {
             return false;
         }
         return original;
