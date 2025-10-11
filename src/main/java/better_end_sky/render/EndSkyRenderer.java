@@ -40,22 +40,27 @@ public class EndSkyRenderer implements AutoCloseable {
     private static final ResourceLocation NEBULA_2_LOCATION = Mod.id("textures/sky/nebula_3.png");
     private static final ResourceLocation HORIZON_LOCATION = Mod.id("textures/sky/nebula_1.png");
     private static final ResourceLocation STARS_LOCATION = Mod.id("textures/sky/stars.png");
-    private static final ResourceLocation FOG_LOCATION = Mod.id("textures/sky/fog.png");
+//    private static final ResourceLocation FOG_LOCATION = Mod.id("textures/sky/fog.png");
 
-    @Nullable private AbstractTexture nebula1Texture;
-    @Nullable private AbstractTexture nebula2Texture;
-    @Nullable private AbstractTexture horizonTexture;
-    @Nullable private AbstractTexture starsTexture;
-    @Nullable private AbstractTexture fogTexture;
+    @Nullable
+    private AbstractTexture nebula1Texture;
+    @Nullable
+    private AbstractTexture nebula2Texture;
+    @Nullable
+    private AbstractTexture horizonTexture;
+    @Nullable
+    private AbstractTexture starsTexture;
+//    @Nullable
+//    private AbstractTexture fogTexture;
 
-    private GpuBuffer nebula1;
-    private GpuBuffer nebula2;
-    private GpuBuffer horizon;
-    private GpuBuffer stars1;
-    private GpuBuffer stars2;
-    private GpuBuffer stars3;
-    private GpuBuffer stars4;
-    private GpuBuffer fog;
+    private final GpuBuffer nebula1;
+    private final GpuBuffer nebula2;
+    private final GpuBuffer horizon;
+    private final GpuBuffer stars1;
+    private final GpuBuffer stars2;
+    private final GpuBuffer stars3;
+    private final GpuBuffer stars4;
+//    private final GpuBuffer fog;
     private final Vector3f axis1;
     private final Vector3f axis2;
     private final Vector3f axis3;
@@ -72,7 +77,7 @@ public class EndSkyRenderer implements AutoCloseable {
         nebula1 = buildBuffer(40, 60, 30, 11515, this::makeFarFog);
         nebula2 = buildBuffer(40, 60, 10, 14151, this::makeFarFog);
         horizon = buildBufferHorizon();
-        fog = buildBufferFog();
+//        fog = buildBufferFog();
 
         RandomSource random = RandomSource.createNewThreadLocalInstance();
         axis1 = new Vector3f(random.nextFloat(), random.nextFloat(), random.nextFloat());
@@ -90,7 +95,7 @@ public class EndSkyRenderer implements AutoCloseable {
         nebula2Texture = getTexture(NEBULA_2_LOCATION);
         horizonTexture = getTexture(HORIZON_LOCATION);
         starsTexture = getTexture(STARS_LOCATION);
-        fogTexture = getTexture(FOG_LOCATION);
+//        fogTexture = getTexture(FOG_LOCATION);
     }
 
     public static AbstractTexture getTexture(ResourceLocation resourceLocation) {
@@ -144,11 +149,11 @@ public class EndSkyRenderer implements AutoCloseable {
             matrices.popPose();
         }
 
-        float a = (BackgroundInfo.fogDensity - 1F);
+       /* float a = (BackgroundInfo.fogDensity - 1F);
         if (a > 0) {
             if (a > 1) a = 1;
             renderBuffer(matrices, fogTexture, fog, RenderPipelines.END_SKY, BackgroundInfo.fogColorRed, BackgroundInfo.fogColorGreen, BackgroundInfo.fogColorBlue, a);
-        }
+        }*/
 
         if (blindnessFog > 0) {
             matrices.pushPose();
@@ -227,12 +232,12 @@ public class EndSkyRenderer implements AutoCloseable {
 
     }
 
-    private GpuBuffer buildBufferFog() {
+/*    private GpuBuffer buildBufferFog() {
         return buildBuffer(
                 0, 0, 0, 0,
                 (_builder, _minSize, _maxSize, _count, _seed) -> makeCylinder(_builder, 16, 50, 70)
         );
-    }
+    }*/
 
     private void makeStars(BufferBuilder buffer, float minSize, float maxSize, int count, long seed) {
         RandomSource random = new LegacyRandomSource(seed);
