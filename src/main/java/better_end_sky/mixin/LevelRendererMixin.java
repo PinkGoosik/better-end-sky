@@ -1,5 +1,6 @@
 package better_end_sky.mixin;
 
+import better_end_sky.render.EndSkyRenderState;
 import better_end_sky.render.EndSkyRenderer;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
@@ -32,6 +33,8 @@ public class LevelRendererMixin {
     private @Nullable ClientLevel level;
     @Unique
     private EndSkyRenderer better_end_sky$customEndSky;
+    @Unique
+    private EndSkyRenderState better_end_sky$customEndSkyRenderStat = new EndSkyRenderState();
 
     @Inject(method = "<init>", at = @At("TAIL"))
     public void init(CallbackInfo ci) {
@@ -43,13 +46,18 @@ public class LevelRendererMixin {
         if (!isDisabled() && hasBetterSky(level)) {
             fogCheck.set(true);
         }
+        better_end_sky$customEndSkyRenderStat.reset();
+    }
+
+    @Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/SkyRenderer;extractRenderState(Lnet/minecraft/client/multiplayer/ClientLevel;FLnet/minecraft/world/phys/Vec3;Lnet/minecraft/client/renderer/state/SkyRenderState;)V"))
+    public void extractEndSkyRenderState(GraphicsResourceAllocator graphicsResourceAllocator, DeltaTracker deltaTracker, boolean bl, Camera camera, Matrix4f matrix4f, Matrix4f matrix4f2, Matrix4f matrix4f3, GpuBufferSlice gpuBufferSlice, Vector4f vector4f, boolean bl2, CallbackInfo ci) {
+        better_end_sky$customEndSky.extractRenderState(level, better_end_sky$customEndSkyRenderStat);
     }
 
     @WrapWithCondition(method = "method_62215", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/SkyRenderer;renderEndSky()V"))
     public boolean renderCustomEndSky(SkyRenderer instance) {
         if (isDisabled()) return true;
-
-        better_end_sky$customEndSky.render(level);
+        better_end_sky$customEndSky.render(better_end_sky$customEndSkyRenderStat);
         return false;
     }
 

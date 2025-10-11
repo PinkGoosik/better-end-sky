@@ -42,16 +42,11 @@ public class EndSkyRenderer implements AutoCloseable {
     private static final ResourceLocation STARS_LOCATION = Mod.id("textures/sky/stars.png");
     private static final ResourceLocation FOG_LOCATION = Mod.id("textures/sky/fog.png");
 
-    @Nullable
-    private AbstractTexture nebula1Texture;
-    @Nullable
-    private AbstractTexture nebula2Texture;
-    @Nullable
-    private AbstractTexture horizonTexture;
-    @Nullable
-    private AbstractTexture starsTexture;
-    @Nullable
-    private AbstractTexture fogTexture;
+    @Nullable private AbstractTexture nebula1Texture;
+    @Nullable private AbstractTexture nebula2Texture;
+    @Nullable private AbstractTexture horizonTexture;
+    @Nullable private AbstractTexture starsTexture;
+    @Nullable private AbstractTexture fogTexture;
 
     private GpuBuffer nebula1;
     private GpuBuffer nebula2;
@@ -105,15 +100,19 @@ public class EndSkyRenderer implements AutoCloseable {
         return abstractTexture;
     }
 
-    public void render(Level world) {
-        if (world == null) return;
+    public void extractRenderState(Level world, EndSkyRenderState state) {
+        state.time = ((world.getDayTime() + client.getDeltaTracker().getRealtimeDeltaTicks()) % 360000) * 0.000017453292f;
+        state.blindnessFog = 1F - BackgroundInfo.blindness;
+    }
+
+    public void render(EndSkyRenderState state) {
         PoseStack matrices = new PoseStack();
         matrices.mulPose(RenderSystem.getModelViewStack());
 
-        float time = ((world.getDayTime() + client.getDeltaTracker().getRealtimeDeltaTicks()) % 360000) * 0.000017453292f;
+        float time = state.time;
         float time2 = time * 2;
 
-        float blindnessFog = 1F - BackgroundInfo.blindness;
+        float blindnessFog = state.blindnessFog;
         float blindMod2 = blindnessFog * 0.2f;
         float blindMod6 = blindnessFog * 0.6f;
 
