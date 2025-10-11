@@ -12,6 +12,7 @@ import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.SkyRenderer;
+import net.minecraft.server.packs.resources.ResourceManager;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
@@ -31,8 +32,6 @@ public class LevelRendererMixin {
     private @Nullable ClientLevel level;
     @Unique
     private EndSkyRenderer better_end_sky$customEndSky;
-    @Unique
-    private Matrix4f better_end_sky$positionMatrix;
 
     @Inject(method = "<init>", at = @At("TAIL"))
     public void init(CallbackInfo ci) {
@@ -40,11 +39,8 @@ public class LevelRendererMixin {
     }
 
     @Inject(method = "renderLevel", at = @At("HEAD"))
-    public void captureMatrix(GraphicsResourceAllocator graphicsResourceAllocator, DeltaTracker deltaTracker, boolean bl, Camera camera, Matrix4f matrix4f, Matrix4f positionMatrix, Matrix4f matrix4f3, GpuBufferSlice gpuBufferSlice, Vector4f vector4f, boolean bl2, CallbackInfo ci, @Local(argsOnly = true, ordinal = 1) LocalBooleanRef fogCheck) {
-        if (isDisabled()) return;
-
-        better_end_sky$positionMatrix = positionMatrix;
-        if (hasBetterSky(level)) {
+    public void preventFog(GraphicsResourceAllocator graphicsResourceAllocator, DeltaTracker deltaTracker, boolean bl, Camera camera, Matrix4f matrix4f, Matrix4f positionMatrix, Matrix4f matrix4f3, GpuBufferSlice gpuBufferSlice, Vector4f vector4f, boolean bl2, CallbackInfo ci, @Local(argsOnly = true, ordinal = 1) LocalBooleanRef fogCheck) {
+        if (!isDisabled() && hasBetterSky(level)) {
             fogCheck.set(true);
         }
     }
@@ -53,7 +49,7 @@ public class LevelRendererMixin {
     public boolean renderCustomEndSky(SkyRenderer instance) {
         if (isDisabled()) return true;
 
-        better_end_sky$customEndSky.render(level, better_end_sky$positionMatrix);
+        better_end_sky$customEndSky.render(level);
         return false;
     }
 
@@ -64,6 +60,11 @@ public class LevelRendererMixin {
             return false;
         }
         return original;
+    }
+
+    @Inject(method = "onResourceManagerReload", at = @At("TAIL"))
+    void reloadTextures(ResourceManager resourceManager, CallbackInfo ci) {
+        better_end_sky$customEndSky.initTextures();
     }
 
     @Inject(method = "close", at = @At("TAIL"))

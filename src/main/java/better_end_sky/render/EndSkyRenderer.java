@@ -19,6 +19,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.LegacyRandomSource;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -35,11 +36,22 @@ public class EndSkyRenderer implements AutoCloseable {
     }
 
     public static final int COLOR = 0xff_ffffff;
-    private static final ResourceLocation NEBULA_1 = Mod.id("textures/sky/nebula_2.png");
-    private static final ResourceLocation NEBULA_2 = Mod.id("textures/sky/nebula_3.png");
-    private static final ResourceLocation HORIZON = Mod.id("textures/sky/nebula_1.png");
-    private static final ResourceLocation STARS = Mod.id("textures/sky/stars.png");
-    private static final ResourceLocation FOG = Mod.id("textures/sky/fog.png");
+    private static final ResourceLocation NEBULA_1_LOCATION = Mod.id("textures/sky/nebula_2.png");
+    private static final ResourceLocation NEBULA_2_LOCATION = Mod.id("textures/sky/nebula_3.png");
+    private static final ResourceLocation HORIZON_LOCATION = Mod.id("textures/sky/nebula_1.png");
+    private static final ResourceLocation STARS_LOCATION = Mod.id("textures/sky/stars.png");
+    private static final ResourceLocation FOG_LOCATION = Mod.id("textures/sky/fog.png");
+
+    @Nullable
+    private AbstractTexture nebula1Texture;
+    @Nullable
+    private AbstractTexture nebula2Texture;
+    @Nullable
+    private AbstractTexture horizonTexture;
+    @Nullable
+    private AbstractTexture starsTexture;
+    @Nullable
+    private AbstractTexture fogTexture;
 
     private GpuBuffer nebula1;
     private GpuBuffer nebula2;
@@ -78,10 +90,25 @@ public class EndSkyRenderer implements AutoCloseable {
         axis4.normalize();
     }
 
-    public void render(Level world, Matrix4f positionMatrix) {
+    public void initTextures() {
+        nebula1Texture = getTexture(NEBULA_1_LOCATION);
+        nebula2Texture = getTexture(NEBULA_2_LOCATION);
+        horizonTexture = getTexture(HORIZON_LOCATION);
+        starsTexture = getTexture(STARS_LOCATION);
+        fogTexture = getTexture(FOG_LOCATION);
+    }
+
+    public static AbstractTexture getTexture(ResourceLocation resourceLocation) {
+        TextureManager textureManager = Minecraft.getInstance().getTextureManager();
+        AbstractTexture abstractTexture = textureManager.getTexture(resourceLocation);
+        abstractTexture.setUseMipmaps(false);
+        return abstractTexture;
+    }
+
+    public void render(Level world) {
         if (world == null) return;
         PoseStack matrices = new PoseStack();
-        matrices.mulPose(positionMatrix);
+        matrices.mulPose(RenderSystem.getModelViewStack());
 
         float time = ((world.getDayTime() + client.getDeltaTracker().getRealtimeDeltaTicks()) % 360000) * 0.000017453292f;
         float time2 = time * 2;
@@ -93,46 +120,46 @@ public class EndSkyRenderer implements AutoCloseable {
         if (blindnessFog > 0) {
             matrices.pushPose();
             matrices.mulPose(new Quaternionf().rotationXYZ(0, time, 0));
-            renderBuffer(matrices, HORIZON, horizon, RenderPipelines.END_SKY, 0.77f, 0.31f, 0.73f, 0.7f * blindnessFog);
+            renderBuffer(matrices, horizonTexture, horizon, RenderPipelines.END_SKY, 0.77f, 0.31f, 0.73f, 0.7f * blindnessFog);
             matrices.popPose();
 
             matrices.pushPose();
             matrices.mulPose(new Quaternionf().rotationXYZ(0, -time, 0));
-            renderBuffer(matrices, NEBULA_1, nebula1, RenderPipelines.END_SKY, 0.77f, 0.31f, 0.73f, blindMod2);
+            renderBuffer(matrices, nebula1Texture, nebula1, RenderPipelines.END_SKY, 0.77f, 0.31f, 0.73f, blindMod2);
             matrices.popPose();
 
             matrices.pushPose();
             matrices.mulPose(new Quaternionf().rotationXYZ(0, time2, 0));
-            renderBuffer(matrices, NEBULA_2, nebula2, RenderPipelines.END_SKY, 0.77f, 0.31f, 0.73f, blindMod2);
+            renderBuffer(matrices, nebula2Texture, nebula2, RenderPipelines.END_SKY, 0.77f, 0.31f, 0.73f, blindMod2);
             matrices.popPose();
 
 
             matrices.pushPose();
             matrices.mulPose(new Quaternionf().setAngleAxis(time, axis3.x, axis3.y, axis3.z));
-            renderBuffer(matrices, STARS, stars3, RenderPipelines.END_SKY, 0.77f, 0.31f, 0.73f, blindMod6);
+            renderBuffer(matrices, starsTexture, stars3, RenderPipelines.END_SKY, 0.77f, 0.31f, 0.73f, blindMod6);
             matrices.popPose();
 
             matrices.pushPose();
             matrices.mulPose(new Quaternionf().setAngleAxis(time2, axis4.x, axis4.y, axis4.z));
-            renderBuffer(matrices, STARS, stars4, RenderPipelines.END_SKY, 1F, 1F, 1F, blindMod6);
+            renderBuffer(matrices, starsTexture, stars4, RenderPipelines.END_SKY, 1F, 1F, 1F, blindMod6);
             matrices.popPose();
         }
 
         float a = (BackgroundInfo.fogDensity - 1F);
         if (a > 0) {
             if (a > 1) a = 1;
-            renderBuffer(matrices, FOG, fog, RenderPipelines.END_SKY, BackgroundInfo.fogColorRed, BackgroundInfo.fogColorGreen, BackgroundInfo.fogColorBlue, a);
+            renderBuffer(matrices, fogTexture, fog, RenderPipelines.END_SKY, BackgroundInfo.fogColorRed, BackgroundInfo.fogColorGreen, BackgroundInfo.fogColorBlue, a);
         }
 
         if (blindnessFog > 0) {
             matrices.pushPose();
             matrices.mulPose(new Quaternionf().setAngleAxis(time * 3, axis1.x, axis1.y, axis1.z));
-            renderBuffer(matrices, HORIZON, stars1, RenderPipelines.STARS, 1, 1, 1, blindMod6);
+            renderBuffer(matrices, horizonTexture, stars1, RenderPipelines.STARS, 1, 1, 1, blindMod6);
             matrices.popPose();
 
             matrices.pushPose();
             matrices.mulPose(new Quaternionf().setAngleAxis(time2, axis2.x, axis2.y, axis2.z));
-            renderBuffer(matrices, HORIZON, stars2, RenderPipelines.STARS, 0.95f, 0.64f, 0.93f, blindMod6);
+            renderBuffer(matrices, horizonTexture, stars2, RenderPipelines.STARS, 0.95f, 0.64f, 0.93f, blindMod6);
             matrices.popPose();
         }
 
@@ -141,7 +168,7 @@ public class EndSkyRenderer implements AutoCloseable {
 
     private void renderBuffer(
             PoseStack matrices,
-            ResourceLocation textureId,
+            AbstractTexture texture,
             GpuBuffer buffer,
             RenderPipeline pipeline,
             float r,
@@ -149,9 +176,6 @@ public class EndSkyRenderer implements AutoCloseable {
             float b,
             float a
     ) {
-        TextureManager textureManager = client.getTextureManager();
-        AbstractTexture texture = textureManager.getTexture(textureId);
-        texture.setUseMipmaps(false);
         var autoBuf = RenderSystem.getSequentialBuffer(pipeline.getVertexFormatMode());
         GpuBuffer gpuBuffer = autoBuf.getBuffer(buffer.size());
         var colorView = client.getMainRenderTarget().getColorTextureView();
