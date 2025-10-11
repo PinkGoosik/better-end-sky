@@ -107,7 +107,7 @@ public class EndSkyRenderer implements AutoCloseable {
 
     public void extractRenderState(Level world, EndSkyRenderState state) {
         state.time = ((world.getDayTime() + client.getDeltaTracker().getRealtimeDeltaTicks()) % 360000) * 0.000017453292f;
-        state.blindnessFog = 1F - BackgroundInfo.blindness;
+        state.darknessModifier = 1F - BackgroundInfo.darknessModifier;
     }
 
     @SuppressWarnings("DataFlowIssue")
@@ -118,35 +118,35 @@ public class EndSkyRenderer implements AutoCloseable {
         float time = state.time;
         float time2 = time * 2;
 
-        float blindnessFog = state.blindnessFog;
-        float blindMod2 = blindnessFog * 0.2f;
-        float blindMod6 = blindnessFog * 0.6f;
+        float darkModifier = state.darknessModifier;
+        float darkMod2 = darkModifier * 0.2f;
+        float darkMod6 = darkModifier * 0.6f;
 
-        if (blindnessFog > 0) {
+        if (darkModifier > 0) {
             matrices.pushPose();
             matrices.mulPose(new Quaternionf().rotationXYZ(0, time, 0));
-            renderBuffer(matrices, horizonTexture, horizon, RenderPipelines.END_SKY, 0.77f, 0.31f, 0.73f, 0.7f * blindnessFog);
+            renderBuffer(matrices, horizonTexture, horizon, RenderPipelines.END_SKY, 0.77f, 0.31f, 0.73f, 0.7f * darkModifier);
             matrices.popPose();
 
             matrices.pushPose();
             matrices.mulPose(new Quaternionf().rotationXYZ(0, -time, 0));
-            renderBuffer(matrices, nebula1Texture, nebula1, RenderPipelines.END_SKY, 0.77f, 0.31f, 0.73f, blindMod2);
+            renderBuffer(matrices, nebula1Texture, nebula1, RenderPipelines.END_SKY, 0.77f, 0.31f, 0.73f, darkMod2);
             matrices.popPose();
 
             matrices.pushPose();
             matrices.mulPose(new Quaternionf().rotationXYZ(0, time2, 0));
-            renderBuffer(matrices, nebula2Texture, nebula2, RenderPipelines.END_SKY, 0.77f, 0.31f, 0.73f, blindMod2);
+            renderBuffer(matrices, nebula2Texture, nebula2, RenderPipelines.END_SKY, 0.77f, 0.31f, 0.73f, darkMod2);
             matrices.popPose();
 
 
             matrices.pushPose();
             matrices.mulPose(new Quaternionf().setAngleAxis(time, axis3.x, axis3.y, axis3.z));
-            renderBuffer(matrices, starsTexture, stars3, RenderPipelines.END_SKY, 0.77f, 0.31f, 0.73f, blindMod6);
+            renderBuffer(matrices, starsTexture, stars3, RenderPipelines.END_SKY, 0.77f, 0.31f, 0.73f, darkMod6);
             matrices.popPose();
 
             matrices.pushPose();
             matrices.mulPose(new Quaternionf().setAngleAxis(time2, axis4.x, axis4.y, axis4.z));
-            renderBuffer(matrices, starsTexture, stars4, RenderPipelines.END_SKY, 1F, 1F, 1F, blindMod6);
+            renderBuffer(matrices, starsTexture, stars4, RenderPipelines.END_SKY, 1F, 1F, 1F, darkMod6);
             matrices.popPose();
         }
 
@@ -156,19 +156,19 @@ public class EndSkyRenderer implements AutoCloseable {
             renderBuffer(matrices, fogTexture, fog, RenderPipelines.END_SKY, BackgroundInfo.fogColorRed, BackgroundInfo.fogColorGreen, BackgroundInfo.fogColorBlue, a);
         }*/
 
-        if (blindnessFog > 0) {
+        if (darkModifier > 0) {
             matrices.pushPose();
             matrices.mulPose(new Quaternionf().setAngleAxis(time * 3, axis1.x, axis1.y, axis1.z));
-            renderBuffer(matrices, horizonTexture, stars1, RenderPipelines.STARS, 1, 1, 1, blindMod6);
+            renderBuffer(matrices, horizonTexture, stars1, RenderPipelines.STARS, 1, 1, 1, darkMod6);
             matrices.popPose();
 
             matrices.pushPose();
             matrices.mulPose(new Quaternionf().setAngleAxis(time2, axis2.x, axis2.y, axis2.z));
-            renderBuffer(matrices, horizonTexture, stars2, RenderPipelines.STARS, 0.95f, 0.64f, 0.93f, blindMod6);
+            renderBuffer(matrices, horizonTexture, stars2, RenderPipelines.STARS, 0.95f, 0.64f, 0.93f, darkMod6);
             matrices.popPose();
         }
 
-        BackgroundInfo.blindness = 0f;
+        BackgroundInfo.darknessModifier = 0f;
     }
 
     private void renderBuffer(

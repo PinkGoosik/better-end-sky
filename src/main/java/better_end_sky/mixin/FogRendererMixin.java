@@ -43,8 +43,8 @@ public abstract class FogRendererMixin {
     }
 
     @ModifyExpressionValue(method = "computeFogColor", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/fog/environment/FogEnvironment;getModifiedDarkness(Lnet/minecraft/world/entity/LivingEntity;FF)F"))
-    private static float setBlindness(float original, @Local(argsOnly = true) ClientLevel world) {
-        BackgroundInfo.blindness = original;
+    private static float setDarknessMod(float original, @Local(argsOnly = true) ClientLevel world) {
+        BackgroundInfo.darknessModifier = original;
         return original;
     }
 }
