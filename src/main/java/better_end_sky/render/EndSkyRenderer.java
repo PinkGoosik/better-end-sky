@@ -110,6 +110,7 @@ public class EndSkyRenderer implements AutoCloseable {
         state.blindnessFog = 1F - BackgroundInfo.blindness;
     }
 
+    @SuppressWarnings("DataFlowIssue")
     public void render(EndSkyRenderState state) {
         PoseStack matrices = new PoseStack();
         matrices.mulPose(RenderSystem.getModelViewStack());
@@ -381,6 +382,7 @@ public class EndSkyRenderer implements AutoCloseable {
         }
     }
 
+    @SuppressWarnings("SameParameterValue")
     private void makeCylinder(BufferBuilder buffer, int segments, float height, float radius) {
         for (int i = 0; i < segments; i++) {
             float a1 = (float) i * (float) Math.PI * 2.0f / (float) segments;

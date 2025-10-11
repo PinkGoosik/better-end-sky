@@ -17,7 +17,7 @@ import static better_end_sky.Mod.isDisabled;
 @Mixin(FogRenderer.class)
 public abstract class FogRendererMixin {
     @ModifyReturnValue(method = "computeFogColor", at = @At("RETURN"))
-    private static Vector4f onRender(Vector4f original) {
+    private static Vector4f setFogColor(Vector4f original) {
         BackgroundInfo.fogColorRed = original.x;
         BackgroundInfo.fogColorGreen = original.y;
         BackgroundInfo.fogColorBlue = original.z;
@@ -43,7 +43,7 @@ public abstract class FogRendererMixin {
     }
 
     @ModifyExpressionValue(method = "computeFogColor", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/fog/environment/FogEnvironment;getModifiedDarkness(Lnet/minecraft/world/entity/LivingEntity;FF)F"))
-    private static float onRender(float original, @Local(argsOnly = true) ClientLevel world) {
+    private static float setBlindness(float original, @Local(argsOnly = true) ClientLevel world) {
         BackgroundInfo.blindness = original;
         return original;
     }
