@@ -156,7 +156,7 @@ public class EndSkyRenderer implements AutoCloseable {
         GpuBuffer gpuBuffer = autoBuf.getBuffer(buffer.size());
         var colorView = client.getMainRenderTarget().getColorTextureView();
         var depthView = client.getMainRenderTarget().getDepthTextureView();
-        var dynamicTransforms = RenderSystem.getDynamicUniforms().writeTransform(matrices.last().pose(), new Vector4f(r, g, b, a), RenderSystem.getModelOffset(), RenderSystem.getTextureMatrix(), 1f);
+        var dynamicTransforms = RenderSystem.getDynamicUniforms().writeTransform(matrices.last().pose(), new Vector4f(r, g, b, a), new Vector3f(), new Matrix4f(), 1f);
 
         try (RenderPass pass = RenderSystem.getDevice()
                 .createCommandEncoder()
@@ -167,7 +167,7 @@ public class EndSkyRenderer implements AutoCloseable {
             pass.bindSampler("Sampler0", texture.getTextureView());
             pass.setVertexBuffer(0, buffer);
             pass.setIndexBuffer(gpuBuffer, autoBuf.type());
-            pass.drawIndexed(0, 0, gpuBuffer.size, 1);
+            pass.drawIndexed(0, 0, gpuBuffer.size(), 1);
         }
     }
 

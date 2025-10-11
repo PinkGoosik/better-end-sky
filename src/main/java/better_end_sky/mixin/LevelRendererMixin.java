@@ -40,7 +40,7 @@ public class LevelRendererMixin {
     }
 
     @Inject(method = "renderLevel", at = @At("HEAD"))
-    public void captureMatrix(GraphicsResourceAllocator graphicsResourceAllocator, DeltaTracker deltaTracker, boolean bl, Camera camera, Matrix4f positionMatrix, Matrix4f matrix4f2, GpuBufferSlice gpuBufferSlice, Vector4f vector4f, boolean bl2, CallbackInfo ci, @Local(argsOnly = true, ordinal = 1) LocalBooleanRef fogCheck) {
+    public void captureMatrix(GraphicsResourceAllocator graphicsResourceAllocator, DeltaTracker deltaTracker, boolean bl, Camera camera, Matrix4f matrix4f, Matrix4f positionMatrix, Matrix4f matrix4f3, GpuBufferSlice gpuBufferSlice, Vector4f vector4f, boolean bl2, CallbackInfo ci, @Local(argsOnly = true, ordinal = 1) LocalBooleanRef fogCheck) {
         if (isDisabled()) return;
 
         better_end_sky$positionMatrix = positionMatrix;
