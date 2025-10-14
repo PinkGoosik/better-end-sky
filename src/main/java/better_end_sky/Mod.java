@@ -1,18 +1,12 @@
 package better_end_sky;
 
-import better_end_sky.render.EndSkyRenderer;
-import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.rendering.v1.DimensionRenderingRegistry;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.Level;
 
-public class Mod implements ClientModInitializer {
+public class Mod {
 
-    @Override
-    public void onInitializeClient() {
-        if(FabricLoader.getInstance().isModLoaded("betterend")) return;
-        DimensionRenderingRegistry.registerSkyRenderer(Level.END, new EndSkyRenderer());
+    public static boolean isDisabled() {
+        return FabricLoader.getInstance().isModLoaded("betterend");
     }
 
     public static ResourceLocation id(String path) {
