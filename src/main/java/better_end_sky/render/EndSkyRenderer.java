@@ -15,7 +15,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.LegacyRandomSource;
@@ -36,11 +36,10 @@ public class EndSkyRenderer implements AutoCloseable {
     }
 
     public static final int COLOR = 0xff_ffffff;
-    private static final ResourceLocation NEBULA_1_LOCATION = Mod.id("textures/sky/nebula_2.png");
-    private static final ResourceLocation NEBULA_2_LOCATION = Mod.id("textures/sky/nebula_3.png");
-    private static final ResourceLocation HORIZON_LOCATION = Mod.id("textures/sky/nebula_1.png");
-    private static final ResourceLocation STARS_LOCATION = Mod.id("textures/sky/stars.png");
-//    private static final ResourceLocation FOG_LOCATION = Mod.id("textures/sky/fog.png");
+    private static final Identifier NEBULA_1_LOCATION = Mod.id("textures/sky/nebula_2.png");
+    private static final Identifier NEBULA_2_LOCATION = Mod.id("textures/sky/nebula_3.png");
+    private static final Identifier HORIZON_LOCATION = Mod.id("textures/sky/nebula_1.png");
+    private static final Identifier STARS_LOCATION = Mod.id("textures/sky/stars.png");
 
     @Nullable
     private AbstractTexture nebula1Texture;
@@ -50,8 +49,6 @@ public class EndSkyRenderer implements AutoCloseable {
     private AbstractTexture horizonTexture;
     @Nullable
     private AbstractTexture starsTexture;
-//    @Nullable
-//    private AbstractTexture fogTexture;
 
     private final GpuBuffer nebula1;
     private final GpuBuffer nebula2;
@@ -60,7 +57,6 @@ public class EndSkyRenderer implements AutoCloseable {
     private final GpuBuffer stars2;
     private final GpuBuffer stars3;
     private final GpuBuffer stars4;
-//    private final GpuBuffer fog;
     private final Vector3f axis1;
     private final Vector3f axis2;
     private final Vector3f axis3;
@@ -77,9 +73,8 @@ public class EndSkyRenderer implements AutoCloseable {
         nebula1 = buildBuffer(40, 60, 30, 11515, this::makeFarFog);
         nebula2 = buildBuffer(40, 60, 10, 14151, this::makeFarFog);
         horizon = buildBufferHorizon();
-//        fog = buildBufferFog();
 
-        RandomSource random = RandomSource.createNewThreadLocalInstance();
+        RandomSource random = RandomSource.createThreadLocalInstance();
         axis1 = new Vector3f(random.nextFloat(), random.nextFloat(), random.nextFloat());
         axis2 = new Vector3f(random.nextFloat(), random.nextFloat(), random.nextFloat());
         axis3 = new Vector3f(random.nextFloat(), random.nextFloat(), random.nextFloat());
@@ -95,18 +90,16 @@ public class EndSkyRenderer implements AutoCloseable {
         nebula2Texture = getTexture(NEBULA_2_LOCATION);
         horizonTexture = getTexture(HORIZON_LOCATION);
         starsTexture = getTexture(STARS_LOCATION);
-//        fogTexture = getTexture(FOG_LOCATION);
     }
 
-    public static AbstractTexture getTexture(ResourceLocation resourceLocation) {
+    public static AbstractTexture getTexture(Identifier resourceLocation) {
         TextureManager textureManager = Minecraft.getInstance().getTextureManager();
-        AbstractTexture abstractTexture = textureManager.getTexture(resourceLocation);
-        abstractTexture.setUseMipmaps(false);
-        return abstractTexture;
+        return textureManager.getTexture(resourceLocation);
     }
 
     public void extractRenderState(Level world, EndSkyRenderState state) {
-        state.time = ((world.getDayTime() + client.getDeltaTracker().getRealtimeDeltaTicks()) % 360000) * 0.000017453292f;
+        long gameTime = world.getLevelData().getGameTime();
+        state.time = ((gameTime + client.getDeltaTracker().getRealtimeDeltaTicks()) % 360000) * 0.000017453292f;
         state.darknessModifier = 1F - BackgroundInfo.darknessModifier;
     }
 
@@ -150,12 +143,6 @@ public class EndSkyRenderer implements AutoCloseable {
             matrices.popPose();
         }
 
-       /* float a = (BackgroundInfo.fogDensity - 1F);
-        if (a > 0) {
-            if (a > 1) a = 1;
-            renderBuffer(matrices, fogTexture, fog, RenderPipelines.END_SKY, BackgroundInfo.fogColorRed, BackgroundInfo.fogColorGreen, BackgroundInfo.fogColorBlue, a);
-        }*/
-
         if (darkModifier > 0) {
             matrices.pushPose();
             matrices.mulPose(new Quaternionf().setAngleAxis(time * 3, axis1.x, axis1.y, axis1.z));
@@ -182,10 +169,10 @@ public class EndSkyRenderer implements AutoCloseable {
             float a
     ) {
         var autoBuf = RenderSystem.getSequentialBuffer(pipeline.getVertexFormatMode());
-        GpuBuffer gpuBuffer = autoBuf.getBuffer(buffer.size());
+        GpuBuffer gpuBuffer = autoBuf.getBuffer((int) buffer.size());
         var colorView = client.getMainRenderTarget().getColorTextureView();
         var depthView = client.getMainRenderTarget().getDepthTextureView();
-        var dynamicTransforms = RenderSystem.getDynamicUniforms().writeTransform(matrices.last().pose(), new Vector4f(r, g, b, a), new Vector3f(), new Matrix4f(), 1f);
+        var dynamicTransforms = RenderSystem.getDynamicUniforms().writeTransform(matrices.last().pose(), new Vector4f(r, g, b, a), new Vector3f(), new Matrix4f());
 
         try (RenderPass pass = RenderSystem.getDevice()
                 .createCommandEncoder()
@@ -193,10 +180,10 @@ public class EndSkyRenderer implements AutoCloseable {
             pass.setPipeline(pipeline);
             RenderSystem.bindDefaultUniforms(pass);
             pass.setUniform("DynamicTransforms", dynamicTransforms);
-            pass.bindSampler("Sampler0", texture.getTextureView());
+            pass.bindTexture("Sampler0", texture.getTextureView(), texture.getSampler());
             pass.setVertexBuffer(0, buffer);
             pass.setIndexBuffer(gpuBuffer, autoBuf.type());
-            pass.drawIndexed(0, 0, gpuBuffer.size(), 1);
+            pass.drawIndexed(0, 0, (int) gpuBuffer.size(), 1);
         }
     }
 
@@ -230,15 +217,7 @@ public class EndSkyRenderer implements AutoCloseable {
                 0, 0, 0, 0,
                 (_builder, _minSize, _maxSize, _count, _seed) -> makeCylinder(_builder, 16, 50, 180)
         );
-
     }
-
-/*    private GpuBuffer buildBufferFog() {
-        return buildBuffer(
-                0, 0, 0, 0,
-                (_builder, _minSize, _maxSize, _count, _seed) -> makeCylinder(_builder, 16, 50, 70)
-        );
-    }*/
 
     private void makeStars(BufferBuilder buffer, float minSize, float maxSize, int count, long seed) {
         RandomSource random = new LegacyRandomSource(seed);

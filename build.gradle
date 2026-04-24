@@ -1,35 +1,65 @@
-plugins {
-	id "fabric-loom" version "1.11-SNAPSHOT"
-	id "io.github.p03w.machete" version "1.2.0"
-}
-
-archivesBaseName = project.archives_base_name
-version = project.mod_version
-group = project.maven_group
-
-repositories {}
-
-dependencies {
-    minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings loom.officialMojangMappings()
-    modImplementation "net.fabricmc:fabric-loader:${project.fabric_loader}"
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api}"
-}
-
-processResources {
-    inputs.property "version", project.version
-    filesMatching("fabric.mod.json") {
-        expand "version": project.version
+buildscript {
+    repositories {
+        maven {
+            name = 'Fabric'
+            url = 'https://maven.fabricmc.net/'
+        }
+        mavenCentral()
+    }
+    dependencies {
+        classpath "net.fabricmc:fabric-loom:${project.loom_version}"
     }
 }
 
-tasks.withType(JavaCompile).configureEach {
-    it.options.encoding = "UTF-8"
-    it.options.release = 21
+plugins {
+	id 'maven-publish'
+}
+
+apply plugin: 'net.fabricmc.fabric-loom'
+
+version = project.mod_version
+group = project.maven_group
+
+repositories {
+	mavenCentral()
+}
+
+loom {
+	splitEnvironmentSourceSets()
+}
+
+sourceSets {
+	main {
+		compileClasspath += configurations.clientCompileClasspath
+		runtimeClasspath += configurations.clientRuntimeClasspath
+	}
+}
+
+dependencies {
+	minecraft("com.mojang:minecraft:${project.minecraft_version}")
+
+	implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+	annotationProcessor "io.github.llamalad7:mixinextras-fabric:0.5.3"
+}
+
+processResources {
+	inputs.property "version", project.version
+
+	filesMatching("fabric.mod.json") {
+		expand "version": inputs.properties.version
+	}
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
-    withSourcesJar()
+	withSourcesJar()
+
+	sourceCompatibility = JavaVersion.VERSION_21
+	targetCompatibility = JavaVersion.VERSION_21
+}
+
+jar {
+	from("LICENSE") {
+		rename { "${it}_${project.archivesName.get()}" }
+	}
 }
