@@ -66,12 +66,12 @@ public class EndSkyRenderer implements AutoCloseable {
 
     public EndSkyRenderer() {
         client = Minecraft.getInstance();
-        stars1 = buildBuffer(0.1f, 0.30f, 3500, 41315, RenderPipelines.STARS, this::makeStars);
-        stars2 = buildBuffer(0.1f, 0.35f, 2000, 35151, RenderPipelines.STARS, this::makeStars);
-        stars3 = buildBuffer(0.4f, 1.2f, 1000, 61354, this::makeUVStars);
-        stars4 = buildBuffer(0.4f, 1.2f, 1000, 61355, this::makeUVStars);
-        nebula1 = buildBuffer(40, 60, 30, 11515, this::makeFarFog);
-        nebula2 = buildBuffer(40, 60, 10, 14151, this::makeFarFog);
+        stars1 = buildBuffer(0.1f, 0.30f, 1200, 41315, RenderPipelines.STARS, this::makeStars);
+        stars2 = buildBuffer(0.1f, 0.35f, 800, 35151, RenderPipelines.STARS, this::makeStars);
+        stars3 = buildBuffer(0.4f, 1.2f, 400, 61354, this::makeUVStars);
+        stars4 = buildBuffer(0.4f, 1.2f, 400, 61355, this::makeUVStars);
+        nebula1 = buildBuffer(40, 60, 15, 11515, this::makeFarFog);
+        nebula2 = buildBuffer(40, 60, 5, 14151, this::makeFarFog);
         horizon = buildBufferHorizon();
 
         RandomSource random = RandomSource.createThreadLocalInstance();
@@ -105,6 +105,8 @@ public class EndSkyRenderer implements AutoCloseable {
 
     @SuppressWarnings("DataFlowIssue")
     public void render(EndSkyRenderState state) {
+        if (state.darknessModifier <= 0f) return;
+
         PoseStack matrices = new PoseStack();
         matrices.mulPose(RenderSystem.getModelViewStack());
 
@@ -115,45 +117,40 @@ public class EndSkyRenderer implements AutoCloseable {
         float darkMod2 = darkModifier * 0.2f;
         float darkMod6 = darkModifier * 0.6f;
 
-        if (darkModifier > 0) {
-            matrices.pushPose();
-            matrices.mulPose(new Quaternionf().rotationXYZ(0, time, 0));
-            renderBuffer(matrices, horizonTexture, horizon, RenderPipelines.END_SKY, 0.77f, 0.31f, 0.73f, 0.7f * darkModifier);
-            matrices.popPose();
+        matrices.pushPose();
+        matrices.mulPose(new Quaternionf().rotationXYZ(0, time, 0));
+        renderBuffer(matrices, horizonTexture, horizon, RenderPipelines.END_SKY, 0.77f, 0.31f, 0.73f, 0.7f * darkModifier);
+        matrices.popPose();
 
-            matrices.pushPose();
-            matrices.mulPose(new Quaternionf().rotationXYZ(0, -time, 0));
-            renderBuffer(matrices, nebula1Texture, nebula1, RenderPipelines.END_SKY, 0.77f, 0.31f, 0.73f, darkMod2);
-            matrices.popPose();
+        matrices.pushPose();
+        matrices.mulPose(new Quaternionf().rotationXYZ(0, -time, 0));
+        renderBuffer(matrices, nebula1Texture, nebula1, RenderPipelines.END_SKY, 0.77f, 0.31f, 0.73f, darkMod2);
+        matrices.popPose();
 
-            matrices.pushPose();
-            matrices.mulPose(new Quaternionf().rotationXYZ(0, time2, 0));
-            renderBuffer(matrices, nebula2Texture, nebula2, RenderPipelines.END_SKY, 0.77f, 0.31f, 0.73f, darkMod2);
-            matrices.popPose();
+        matrices.pushPose();
+        matrices.mulPose(new Quaternionf().rotationXYZ(0, time2, 0));
+        renderBuffer(matrices, nebula2Texture, nebula2, RenderPipelines.END_SKY, 0.77f, 0.31f, 0.73f, darkMod2);
+        matrices.popPose();
 
+        matrices.pushPose();
+        matrices.mulPose(new Quaternionf().setAngleAxis(time, axis3.x, axis3.y, axis3.z));
+        renderBuffer(matrices, starsTexture, stars3, RenderPipelines.END_SKY, 0.77f, 0.31f, 0.73f, darkMod6);
+        matrices.popPose();
 
-            matrices.pushPose();
-            matrices.mulPose(new Quaternionf().setAngleAxis(time, axis3.x, axis3.y, axis3.z));
-            renderBuffer(matrices, starsTexture, stars3, RenderPipelines.END_SKY, 0.77f, 0.31f, 0.73f, darkMod6);
-            matrices.popPose();
+        matrices.pushPose();
+        matrices.mulPose(new Quaternionf().setAngleAxis(time2, axis4.x, axis4.y, axis4.z));
+        renderBuffer(matrices, starsTexture, stars4, RenderPipelines.END_SKY, 1F, 1F, 1F, darkMod6);
+        matrices.popPose();
 
-            matrices.pushPose();
-            matrices.mulPose(new Quaternionf().setAngleAxis(time2, axis4.x, axis4.y, axis4.z));
-            renderBuffer(matrices, starsTexture, stars4, RenderPipelines.END_SKY, 1F, 1F, 1F, darkMod6);
-            matrices.popPose();
-        }
+        matrices.pushPose();
+        matrices.mulPose(new Quaternionf().setAngleAxis(time * 3, axis1.x, axis1.y, axis1.z));
+        renderBuffer(matrices, horizonTexture, stars1, RenderPipelines.STARS, 1, 1, 1, darkMod6);
+        matrices.popPose();
 
-        if (darkModifier > 0) {
-            matrices.pushPose();
-            matrices.mulPose(new Quaternionf().setAngleAxis(time * 3, axis1.x, axis1.y, axis1.z));
-            renderBuffer(matrices, horizonTexture, stars1, RenderPipelines.STARS, 1, 1, 1, darkMod6);
-            matrices.popPose();
-
-            matrices.pushPose();
-            matrices.mulPose(new Quaternionf().setAngleAxis(time2, axis2.x, axis2.y, axis2.z));
-            renderBuffer(matrices, horizonTexture, stars2, RenderPipelines.STARS, 0.95f, 0.64f, 0.93f, darkMod6);
-            matrices.popPose();
-        }
+        matrices.pushPose();
+        matrices.mulPose(new Quaternionf().setAngleAxis(time2, axis2.x, axis2.y, axis2.z));
+        renderBuffer(matrices, horizonTexture, stars2, RenderPipelines.STARS, 0.95f, 0.64f, 0.93f, darkMod6);
+        matrices.popPose();
 
         BackgroundInfo.darknessModifier = 0f;
     }

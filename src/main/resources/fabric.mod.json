@@ -4,10 +4,11 @@
   "version": "${version}",
 
   "name": "Better End Sky",
-  "description": "Ripoff of the Better End mod's sky renderer in a standalone mod for a client-side only usage.",
+  "description": "Forked version of the BetterEndSky mod - client-side end sky renderer with nebulas and stars.",
   "authors": [
     "paulevs",
-    "BetterX Team"
+    "BetterX Team",
+    "Devajuice"
   ],
   "contact": {
     "homepage": "https://github.com/PinkGoosik/better-end-sky",
