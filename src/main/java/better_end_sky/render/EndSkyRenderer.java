@@ -73,7 +73,7 @@ public class EndSkyRenderer implements AutoCloseable {
         nebula2 = buildBuffer(40, 60, 10, 14151, this::makeFarFog);
         horizon = buildBufferHorizon();
 
-        RandomSource random = RandomSource.createNewThreadLocalInstance();
+        RandomSource random = RandomSource.createThreadLocalInstance();
         axis1 = new Vector3f(random.nextFloat(), random.nextFloat(), random.nextFloat());
         axis2 = new Vector3f(random.nextFloat(), random.nextFloat(), random.nextFloat());
         axis3 = new Vector3f(random.nextFloat(), random.nextFloat(), random.nextFloat());
@@ -96,7 +96,7 @@ public class EndSkyRenderer implements AutoCloseable {
     }
 
     public void extractRenderState(Level world, EndSkyRenderState state) {
-        state.time = ((world.getDayTime() + client.getDeltaTracker().getRealtimeDeltaTicks()) % 360000) * 0.000017453292f;
+        state.time = ((world.getDefaultClockTime() + client.getDeltaTracker().getRealtimeDeltaTicks()) % 360000) * 0.000017453292f;
         state.darknessModifier = 1F - BackgroundInfo.darknessModifier;
     }
 
@@ -388,4 +388,5 @@ public class EndSkyRenderer implements AutoCloseable {
         stars3.close();
         stars4.close();
     }
+
 }
