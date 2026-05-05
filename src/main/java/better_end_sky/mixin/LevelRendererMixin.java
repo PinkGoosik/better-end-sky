@@ -32,9 +32,9 @@ public class LevelRendererMixin {
     @Shadow
     private @Nullable ClientLevel level;
     @Unique
-    private EndSkyRenderer better_end_sky$EndSkyRenderer;
+    private static EndSkyRenderer better_end_sky$EndSkyRenderer;
     @Unique
-    final private EndSkyRenderState better_end_sky$EndSkyRenderStat = new EndSkyRenderState();
+    static final private EndSkyRenderState better_end_sky$EndSkyRenderStat = new EndSkyRenderState();
 
     @Inject(method = "<init>", at = @At("TAIL"))
     public void init(CallbackInfo ci) {
@@ -49,13 +49,13 @@ public class LevelRendererMixin {
         better_end_sky$EndSkyRenderStat.reset();
     }
 
-    @Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/SkyRenderer;extractRenderState(Lnet/minecraft/client/multiplayer/ClientLevel;FLnet/minecraft/world/phys/Vec3;Lnet/minecraft/client/renderer/state/SkyRenderState;)V"))
+    @Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/SkyRenderer;extractRenderState(Lnet/minecraft/client/multiplayer/ClientLevel;FLnet/minecraft/client/Camera;Lnet/minecraft/client/renderer/state/SkyRenderState;)V"))
     public void extractEndSkyRenderState(GraphicsResourceAllocator graphicsResourceAllocator, DeltaTracker deltaTracker, boolean bl, Camera camera, Matrix4f matrix4f, Matrix4f matrix4f2, Matrix4f matrix4f3, GpuBufferSlice gpuBufferSlice, Vector4f vector4f, boolean bl2, CallbackInfo ci) {
         better_end_sky$EndSkyRenderer.extractRenderState(level, better_end_sky$EndSkyRenderStat);
     }
 
     @WrapWithCondition(method = "method_62215", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/SkyRenderer;renderEndSky()V"))
-    public boolean renderEndSky(SkyRenderer instance) {
+    private static boolean renderEndSky(SkyRenderer instance) {
         if (isDisabled()) return true;
         better_end_sky$EndSkyRenderer.render(better_end_sky$EndSkyRenderStat);
         return false;

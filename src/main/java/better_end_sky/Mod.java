@@ -2,8 +2,8 @@ package better_end_sky;
 
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.DimensionSpecialEffects;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.level.dimension.DimensionType;
 
 public class Mod {
 
@@ -12,10 +12,10 @@ public class Mod {
     }
 
     public static boolean hasBetterSky(ClientLevel level) {
-        return level.effects().skyType() == DimensionSpecialEffects.SkyType.END;
+        return level.dimensionType().skybox() == DimensionType.Skybox.END;
     }
 
-    public static ResourceLocation id(String path) {
-        return ResourceLocation.fromNamespaceAndPath("better_end_sky", path);
+    public static Identifier id(String path) {
+        return Identifier.fromNamespaceAndPath("better_end_sky", path);
     }
 }
