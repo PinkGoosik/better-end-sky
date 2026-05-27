@@ -3,14 +3,12 @@ package better_end_sky.render;
 import better_end_sky.Mod;
 import better_end_sky.util.BackgroundInfo;
 import better_end_sky.util.MHelper;
+import com.mojang.blaze3d.PrimitiveTopology;
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.ByteBufferBuilder;
-import com.mojang.blaze3d.vertex.MeshData;
-import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.AbstractTexture;
@@ -19,13 +17,12 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.LegacyRandomSource;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
+import java.util.Optional;
 import java.util.OptionalDouble;
-import java.util.OptionalInt;
 
 public class EndSkyRenderer implements AutoCloseable {
 
@@ -65,8 +62,8 @@ public class EndSkyRenderer implements AutoCloseable {
 
     public EndSkyRenderer() {
         client = Minecraft.getInstance();
-        stars1 = buildBuffer(0.1f, 0.30f, 3500, 41315, RenderPipelines.STARS, this::makeStars);
-        stars2 = buildBuffer(0.1f, 0.35f, 2000, 35151, RenderPipelines.STARS, this::makeStars);
+        stars1 = buildBuffer(0.1f, 0.30f, 3500, 41315, DefaultVertexFormat.POSITION, this::makeStars);
+        stars2 = buildBuffer(0.1f, 0.35f, 2000, 35151, DefaultVertexFormat.POSITION, this::makeStars);
         stars3 = buildBuffer(0.4f, 1.2f, 1000, 61354, this::makeUVStars);
         stars4 = buildBuffer(0.4f, 1.2f, 1000, 61355, this::makeUVStars);
         nebula1 = buildBuffer(40, 60, 30, 11515, this::makeFarFog);
@@ -163,23 +160,23 @@ public class EndSkyRenderer implements AutoCloseable {
             float b,
             float a
     ) {
-        var autoBuf = RenderSystem.getSequentialBuffer(pipeline.getVertexFormatMode());
+        var autoBuf = RenderSystem.getSequentialBuffer(PrimitiveTopology.QUADS);
         GpuBuffer indexBuffer = autoBuf.getBuffer((int) vertexBuffer.size());
-        var colorView = client.getMainRenderTarget().getColorTextureView();
-        var depthView = client.getMainRenderTarget().getDepthTextureView();
+        var colorView = client.gameRenderer.mainRenderTarget().getColorTextureView();
+        var depthView = client.gameRenderer.mainRenderTarget().getDepthTextureView();
         var dynamicTransforms = RenderSystem.getDynamicUniforms()
-                .writeTransform(matrices.last().pose(), new Vector4f(r, g, b, a), new Vector3f(), new Matrix4f());
+                .writeTransform(matrices.last().pose(), new Vector4f(r, g, b, a));
 
         try (RenderPass pass = RenderSystem.getDevice()
                 .createCommandEncoder()
-                .createRenderPass(() -> "Better End sky", colorView, OptionalInt.empty(), depthView, OptionalDouble.empty())) {
+                .createRenderPass(() -> "Better End sky", colorView, Optional.empty(), depthView, OptionalDouble.empty())) {
             pass.setPipeline(pipeline);
             RenderSystem.bindDefaultUniforms(pass);
             pass.setUniform("DynamicTransforms", dynamicTransforms);
             pass.bindTexture("Sampler0", texture.getTextureView(), texture.getSampler());
-            pass.setVertexBuffer(0, vertexBuffer);
+            pass.setVertexBuffer(0, vertexBuffer.slice());
             pass.setIndexBuffer(indexBuffer, autoBuf.type());
-            pass.drawIndexed(0, 0, (int) indexBuffer.size(), 1);
+            pass.drawIndexed((int) vertexBuffer.size(), 1, 0, 0, 0);
         }
     }
 
@@ -188,12 +185,13 @@ public class EndSkyRenderer implements AutoCloseable {
             float maxSize,
             int count,
             long seed,
-            RenderPipeline format,
+            VertexFormat format,
             BufferFunction fkt
     ) {
+        var primitive = PrimitiveTopology.QUADS;
         GpuBuffer var10;
-        try (ByteBufferBuilder byteBufferBuilder = new ByteBufferBuilder(format.getVertexFormat().getVertexSize() * count * 4)) {
-            BufferBuilder bufferBuilder = new BufferBuilder(byteBufferBuilder, format.getVertexFormatMode(), format.getVertexFormat());
+        try (ByteBufferBuilder byteBufferBuilder = new ByteBufferBuilder(primitive.primitiveLength * count * 4)) {
+            BufferBuilder bufferBuilder = new BufferBuilder(byteBufferBuilder, primitive, format);
             fkt.make(bufferBuilder, minSize, maxSize, count, seed);
             try (MeshData meshData = bufferBuilder.buildOrThrow()) {
                 var10 = RenderSystem.getDevice().createBuffer(() -> "Better End Sky vertex buffer", 40, meshData.vertexBuffer());
@@ -205,7 +203,7 @@ public class EndSkyRenderer implements AutoCloseable {
     private GpuBuffer buildBuffer(
             float minSize, float maxSize, int count, long seed, BufferFunction fkt
     ) {
-        return buildBuffer(minSize, maxSize, count, seed, RenderPipelines.END_SKY, fkt);
+        return buildBuffer(minSize, maxSize, count, seed, DefaultVertexFormat.POSITION_TEX_COLOR, fkt);
     }
 
     private GpuBuffer buildBufferHorizon() {
