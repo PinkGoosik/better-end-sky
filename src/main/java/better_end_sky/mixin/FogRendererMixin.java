@@ -11,14 +11,13 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
 import static better_end_sky.Mod.hasBetterSky;
-import static better_end_sky.Mod.isDisabled;
 
 @Mixin(FogRenderer.class)
 public abstract class FogRendererMixin {
 
     @ModifyReturnValue(method = "setupFog", at = @At("RETURN"))
     FogData modifyOutputFog(FogData original, @Local(argsOnly = true) ClientLevel level) {
-        if (!isDisabled() && hasBetterSky(level)) {
+        if (hasBetterSky(level)) {
             original.environmentalStart *= 0.8f;
             original.renderDistanceStart *= 0.5f;
         }
