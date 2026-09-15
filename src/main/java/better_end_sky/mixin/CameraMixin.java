@@ -1,6 +1,7 @@
 package better_end_sky.mixin;
 
 import net.minecraft.client.Camera;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.world.level.Level;
@@ -21,7 +22,7 @@ public class CameraMixin {
     private @Nullable Level level;
 
     @Inject(method = "extractRenderState", at = @At("TAIL"))
-    void nullifyMobEffects(CameraRenderState cameraState, float cameraEntityPartialTicks, CallbackInfo ci) {
+    void nullifyMobEffects(CameraRenderState cameraState, DeltaTracker deltaTracker, CallbackInfo ci) {
         if (!isDisabled() && level instanceof ClientLevel cLevel && hasBetterSky(cLevel)) {
             cameraState.entityRenderState.doesMobEffectBlockSky = false;
         }

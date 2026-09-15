@@ -2,8 +2,11 @@ package better_end_sky.mixin;
 
 import better_end_sky.Mod;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
+import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.SkyRenderer;
+import net.minecraft.client.renderer.state.level.SkyRenderState;
+import net.minecraft.world.level.dimension.DimensionType;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -21,8 +24,11 @@ public class LevelRendererMixin {
         }
     }*/
 
-    @WrapWithCondition(method = "lambda$addSkyPass$0", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/SkyRenderer;renderEndSky()V"))
-    private static boolean renderEndSky(SkyRenderer instance) {
+    @WrapWithCondition(method = "lambda$addSkyPass$0", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/SkyRenderer;render(Lcom/mojang/renderpearl/api/buffers/GpuBufferSlice;Lnet/minecraft/client/renderer/state/level/SkyRenderState;)V"))
+    private static boolean renderEndSky(
+        SkyRenderer instance, GpuBufferSlice skyFog, SkyRenderState state
+    ) {
+        if (state.skybox != DimensionType.Skybox.END) return true;
         if (isDisabled()) return true;
         Mod.endSkyRenderer.render(Mod.endSkyRenderState);
         return false;
