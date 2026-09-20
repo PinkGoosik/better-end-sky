@@ -6,7 +6,7 @@
     "CameraMixin",
     "FogRendererMixin",
     "LevelExtractorMixin",
-    "LevelRendererMixin"
+    "SkyRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -3,12 +3,13 @@ package better_end_sky.render;
 import better_end_sky.Mod;
 import better_end_sky.util.BackgroundInfo;
 import better_end_sky.util.MHelper;
-import com.mojang.blaze3d.PrimitiveTopology;
-import com.mojang.blaze3d.buffers.GpuBuffer;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
+import com.mojang.renderpearl.api.buffers.GpuBuffer;
+import com.mojang.renderpearl.api.commands.RenderPass;
+import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
+import com.mojang.renderpearl.api.vertex.VertexFormat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.AbstractTexture;
@@ -20,9 +21,6 @@ import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
-
-import java.util.Optional;
-import java.util.OptionalDouble;
 
 public class EndSkyRenderer implements AutoCloseable {
 
@@ -98,7 +96,7 @@ public class EndSkyRenderer implements AutoCloseable {
     }
 
     @SuppressWarnings("DataFlowIssue")
-    public void render(EndSkyRenderState state) {
+    public void render(EndSkyRenderState state, RenderPass renderPass) {
         PoseStack matrices = new PoseStack();
         matrices.mulPose(RenderSystem.getModelViewStack());
 
@@ -111,39 +109,39 @@ public class EndSkyRenderer implements AutoCloseable {
 
         if (darkModifier > 0) {
             matrices.pushPose();
-            matrices.mulPose(new Quaternionf().rotationXYZ(0, time, 0));
-            renderBuffer(matrices, horizonTexture, horizon, RenderPipelines.END_SKY, 0.77f, 0.31f, 0.73f, 0.7f * darkModifier);
+            matrices.rotate(new Quaternionf().rotationXYZ(0, time, 0));
+            renderBuffer(renderPass, matrices, horizonTexture, horizon, RenderPipelines.END_SKY, 0.77f, 0.31f, 0.73f, 0.7f * darkModifier);
             matrices.popPose();
 
             matrices.pushPose();
-            matrices.mulPose(new Quaternionf().rotationXYZ(0, -time, 0));
-            renderBuffer(matrices, nebula1Texture, nebula1, RenderPipelines.END_SKY, 0.77f, 0.31f, 0.73f, darkMod2);
+            matrices.rotate(new Quaternionf().rotationXYZ(0, -time, 0));
+            renderBuffer(renderPass, matrices, nebula1Texture, nebula1, RenderPipelines.END_SKY, 0.77f, 0.31f, 0.73f, darkMod2);
             matrices.popPose();
 
             matrices.pushPose();
-            matrices.mulPose(new Quaternionf().rotationXYZ(0, time2, 0));
-            renderBuffer(matrices, nebula2Texture, nebula2, RenderPipelines.END_SKY, 0.77f, 0.31f, 0.73f, darkMod2);
+            matrices.rotate(new Quaternionf().rotationXYZ(0, time2, 0));
+            renderBuffer(renderPass, matrices, nebula2Texture, nebula2, RenderPipelines.END_SKY, 0.77f, 0.31f, 0.73f, darkMod2);
             matrices.popPose();
 
 
             matrices.pushPose();
-            matrices.mulPose(new Quaternionf().setAngleAxis(time, axis3.x, axis3.y, axis3.z));
-            renderBuffer(matrices, starsTexture, stars3, RenderPipelines.END_SKY, 0.77f, 0.31f, 0.73f, darkMod6);
+            matrices.rotate(new Quaternionf().setAngleAxis(time, axis3.x, axis3.y, axis3.z));
+            renderBuffer(renderPass, matrices, starsTexture, stars3, RenderPipelines.END_SKY, 0.77f, 0.31f, 0.73f, darkMod6);
             matrices.popPose();
 
             matrices.pushPose();
-            matrices.mulPose(new Quaternionf().setAngleAxis(time2, axis4.x, axis4.y, axis4.z));
-            renderBuffer(matrices, starsTexture, stars4, RenderPipelines.END_SKY, 1F, 1F, 1F, darkMod6);
+            matrices.rotate(new Quaternionf().setAngleAxis(time2, axis4.x, axis4.y, axis4.z));
+            renderBuffer(renderPass, matrices, starsTexture, stars4, RenderPipelines.END_SKY, 1F, 1F, 1F, darkMod6);
             matrices.popPose();
 
             matrices.pushPose();
-            matrices.mulPose(new Quaternionf().setAngleAxis(time * 3, axis1.x, axis1.y, axis1.z));
-            renderBuffer(matrices, horizonTexture, stars1, RenderPipelines.STARS, 1, 1, 1, darkMod6);
+            matrices.rotate(new Quaternionf().setAngleAxis(time * 3, axis1.x, axis1.y, axis1.z));
+            renderBuffer(renderPass, matrices, horizonTexture, stars1, RenderPipelines.STARS, 1, 1, 1, darkMod6);
             matrices.popPose();
 
             matrices.pushPose();
-            matrices.mulPose(new Quaternionf().setAngleAxis(time2, axis2.x, axis2.y, axis2.z));
-            renderBuffer(matrices, horizonTexture, stars2, RenderPipelines.STARS, 0.95f, 0.64f, 0.93f, darkMod6);
+            matrices.rotate(new Quaternionf().setAngleAxis(time2, axis2.x, axis2.y, axis2.z));
+            renderBuffer(renderPass, matrices, horizonTexture, stars2, RenderPipelines.STARS, 0.95f, 0.64f, 0.93f, darkMod6);
             matrices.popPose();
         }
 
@@ -151,6 +149,7 @@ public class EndSkyRenderer implements AutoCloseable {
     }
 
     private void renderBuffer(
+            RenderPass renderPass,
             PoseStack matrices,
             AbstractTexture texture,
             GpuBuffer vertexBuffer,
@@ -162,22 +161,18 @@ public class EndSkyRenderer implements AutoCloseable {
     ) {
         var autoBuf = RenderSystem.getSequentialBuffer(PrimitiveTopology.QUADS);
         GpuBuffer indexBuffer = autoBuf.getBuffer((int) vertexBuffer.size());
-        var colorView = client.gameRenderer.mainRenderTarget().getColorTextureView();
-        var depthView = client.gameRenderer.mainRenderTarget().getDepthTextureView();
         var dynamicTransforms = RenderSystem.getDynamicUniforms()
                 .writeTransform(matrices.last().pose(), new Vector4f(r, g, b, a));
 
-        try (RenderPass pass = RenderSystem.getDevice()
-                .createCommandEncoder()
-                .createRenderPass(() -> "Better End sky", colorView, Optional.empty(), depthView, OptionalDouble.empty())) {
-            pass.setPipeline(pipeline);
-            RenderSystem.bindDefaultUniforms(pass);
-            pass.setUniform("DynamicTransforms", dynamicTransforms);
-            pass.bindTexture("Sampler0", texture.getTextureView(), texture.getSampler());
-            pass.setVertexBuffer(0, vertexBuffer.slice());
-            pass.setIndexBuffer(indexBuffer, autoBuf.type());
-            pass.drawIndexed((int) vertexBuffer.size(), 1, 0, 0, 0);
-        }
+        renderPass.pushDebugGroup(() -> "Better End sky");
+        renderPass.setPipeline(RenderSystem.getCompiledPipeline(pipeline));
+        RenderSystem.bindDefaultUniforms(renderPass);
+        renderPass.setUniform("DynamicTransforms", dynamicTransforms);
+        renderPass.setUniform("Sampler0", texture.getTextureView(), texture.getSampler());
+        renderPass.setVertexBuffer(0, vertexBuffer.slice());
+        renderPass.setIndexBuffer(indexBuffer, autoBuf.type());
+        renderPass.drawIndexed((int) vertexBuffer.size(), 1, 0, 0, 0);
+        renderPass.popDebugGroup();
     }
 
     private GpuBuffer buildBuffer(
