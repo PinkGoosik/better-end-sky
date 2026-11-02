@@ -44,19 +44,21 @@ public class EndSkyRenderer implements AutoCloseable {
     @Nullable
     private AbstractTexture starsTexture;
 
-    private final GpuBuffer nebula1;
-    private final GpuBuffer nebula2;
-    private final GpuBuffer horizon;
-    private final GpuBuffer stars1;
-    private final GpuBuffer stars2;
-    private final GpuBuffer stars3;
-    private final GpuBuffer stars4;
+    private final IndexedBuffer nebula1;
+    private final IndexedBuffer nebula2;
+    private final IndexedBuffer horizon;
+    private final IndexedBuffer stars1;
+    private final IndexedBuffer stars2;
+    private final IndexedBuffer stars3;
+    private final IndexedBuffer stars4;
     private final Vector3f axis1;
     private final Vector3f axis2;
     private final Vector3f axis3;
     private final Vector3f axis4;
 
     private final Minecraft client;
+
+    public record IndexedBuffer(GpuBuffer buffer, int indexCount) { }
 
     public EndSkyRenderer() {
         client = Minecraft.getInstance();
@@ -152,7 +154,7 @@ public class EndSkyRenderer implements AutoCloseable {
             RenderPass renderPass,
             PoseStack matrices,
             AbstractTexture texture,
-            GpuBuffer vertexBuffer,
+            IndexedBuffer vertexBuffer,
             RenderPipeline pipeline,
             float r,
             float g,
@@ -160,7 +162,7 @@ public class EndSkyRenderer implements AutoCloseable {
             float a
     ) {
         var autoBuf = RenderSystem.getSequentialBuffer(PrimitiveTopology.QUADS);
-        GpuBuffer indexBuffer = autoBuf.getBuffer((int) vertexBuffer.size());
+        GpuBuffer indexBuffer = autoBuf.getBuffer(vertexBuffer.indexCount());
         var dynamicTransforms = RenderSystem.getDynamicUniforms()
                 .writeTransform(matrices.last().pose(), new Vector4f(r, g, b, a));
 
@@ -169,13 +171,13 @@ public class EndSkyRenderer implements AutoCloseable {
         RenderSystem.bindDefaultUniforms(renderPass);
         renderPass.setUniform("DynamicTransforms", dynamicTransforms);
         renderPass.setUniform("Sampler0", texture.getTextureView(), texture.getSampler());
-        renderPass.setVertexBuffer(0, vertexBuffer.slice());
+        renderPass.setVertexBuffer(0, vertexBuffer.buffer.slice());
         renderPass.setIndexBuffer(indexBuffer, autoBuf.type());
-        renderPass.drawIndexed((int) vertexBuffer.size(), 1, 0, 0, 0);
+        renderPass.drawIndexed(vertexBuffer.indexCount(), 1, 0, 0, 0);
         renderPass.popDebugGroup();
     }
 
-    private GpuBuffer buildBuffer(
+    private IndexedBuffer buildBuffer(
             float minSize,
             float maxSize,
             int count,
@@ -184,24 +186,28 @@ public class EndSkyRenderer implements AutoCloseable {
             BufferFunction fkt
     ) {
         var primitive = PrimitiveTopology.QUADS;
-        GpuBuffer var10;
+        IndexedBuffer buffer;
         try (ByteBufferBuilder byteBufferBuilder = new ByteBufferBuilder(primitive.primitiveLength * count * 4)) {
             BufferBuilder bufferBuilder = new BufferBuilder(byteBufferBuilder, primitive, format);
             fkt.make(bufferBuilder, minSize, maxSize, count, seed);
             try (MeshData meshData = bufferBuilder.buildOrThrow()) {
-                var10 = RenderSystem.getDevice().createBuffer(() -> "Better End Sky vertex buffer", 40, meshData.vertexBuffer());
+                var indices = meshData.drawState().indexCount();
+                buffer = new IndexedBuffer(
+                        RenderSystem.getDevice().createBuffer(() -> "Better End Sky vertex buffer", 40, meshData.vertexBuffer()),
+                        indices
+                );
             }
         }
-        return var10;
+        return buffer;
     }
 
-    private GpuBuffer buildBuffer(
+    private IndexedBuffer buildBuffer(
             float minSize, float maxSize, int count, long seed, BufferFunction fkt
     ) {
         return buildBuffer(minSize, maxSize, count, seed, DefaultVertexFormat.POSITION_TEX_COLOR, fkt);
     }
 
-    private GpuBuffer buildBufferHorizon() {
+    private IndexedBuffer buildBufferHorizon() {
         return buildBuffer(
                 0, 0, 0, 0,
                 (_builder, _minSize, _maxSize, _count, _seed) -> makeCylinder(_builder, 16, 50, 180)
@@ -373,13 +379,13 @@ public class EndSkyRenderer implements AutoCloseable {
 
     @Override
     public void close() {
-        nebula1.close();
-        nebula2.close();
-        horizon.close();
-        stars1.close();
-        stars2.close();
-        stars3.close();
-        stars4.close();
+        nebula1.buffer.close();
+        nebula2.buffer.close();
+        horizon.buffer.close();
+        stars1.buffer.close();
+        stars2.buffer.close();
+        stars3.buffer.close();
+        stars4.buffer.close();
     }
 
 }
