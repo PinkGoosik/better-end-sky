@@ -13,6 +13,7 @@ import com.mojang.renderpearl.api.vertex.VertexFormat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.AbstractTexture;
+import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
@@ -81,15 +82,11 @@ public class EndSkyRenderer implements AutoCloseable {
         axis4.normalize();
     }
 
-    public void initTextures() {
-        nebula1Texture = getTexture(NEBULA_1_LOCATION);
-        nebula2Texture = getTexture(NEBULA_2_LOCATION);
-        horizonTexture = getTexture(HORIZON_LOCATION);
-        starsTexture = getTexture(STARS_LOCATION);
-    }
-
-    public static AbstractTexture getTexture(Identifier Identifier) {
-        return Minecraft.getInstance().getTextureManager().getTexture(Identifier);
+    public void initTextures(TextureManager manager) {
+        nebula1Texture = manager.getTexture(NEBULA_1_LOCATION);
+        nebula2Texture = manager.getTexture(NEBULA_2_LOCATION);
+        horizonTexture = manager.getTexture(HORIZON_LOCATION);
+        starsTexture = manager.getTexture(STARS_LOCATION);
     }
 
     public void extractRenderState(Level world, EndSkyRenderState state) {

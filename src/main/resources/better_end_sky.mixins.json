@@ -6,7 +6,6 @@
     "CameraMixin",
     "FogRendererMixin",
     "LevelExtractorMixin",
-    "LevelRendererMixin",
     "SkyRendererMixin"
   ],
   "injectors": {
