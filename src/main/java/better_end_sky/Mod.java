@@ -8,7 +8,7 @@ import net.minecraft.world.level.dimension.DimensionType;
 
 public class Mod {
 
-    public static final EndSkyRenderer endSkyRenderer = new EndSkyRenderer();
+    public static EndSkyRenderer endSkyRenderer = new EndSkyRenderer();
     public static final EndSkyRenderState endSkyRenderState = new EndSkyRenderState();
 
     public static boolean hasBetterSky(ClientLevel level) {
